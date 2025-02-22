@@ -1,6 +1,7 @@
 import { Context, Hono } from "hono";
 import { renderToString } from "react-dom/server";
 import { jwk } from "hono/jwk";
+import { getUser } from "./auth0-client";
 
 const app = new Hono();
 
@@ -13,9 +14,11 @@ app.use(
 
 app.get("/api/protected", async (c: Context) => {
   const jwtPayload = c.get("jwtPayload");
+  const user = await getUser(jwtPayload.sub);
+  console.log(user);
   return c.json({
     ...(jwtPayload as Record<string, unknown>),
-    "i-am-protected": "Whoohoo!",
+    "i-am-protected": `Whoohoo! ${user.email}`,
   });
 });
 

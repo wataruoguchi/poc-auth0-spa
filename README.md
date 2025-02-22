@@ -13,6 +13,7 @@ This is a PoC Single Page Application that allows you "Login", "Log out", and re
 - [x] Setup Auth0 Database
 - [x] Sign Up
   - "Disable Sign Ups" is turned on. We don't need it anyway because we invite users.
+- [x] Setup Auth0 M2M (Machine-to-Machine) Application in order to user Management API v2. [Get access tokens](https://auth0.com/docs/secure/tokens/access-tokens/management-api-access-tokens/get-management-api-access-tokens-for-production#get-access-tokens).
 - [ ] Invite a user.
   - It requires backend.
 - [ ] Change Password
