@@ -22,11 +22,15 @@ async function renderScreen() {
     cacheLocation: "localstorage", // There will be a problem in our legacy application that would remove the in-memory cache. We want this to keep the user's session alive.
     authorizationParams: {
       redirect_uri: import.meta.env.VITE_MY_CALLBACK_URL,
-      connection_id: "wataru-database",
+      connection_id: import.meta.env.VITE_AUTH0_CONNECTION_ID,
     },
   });
 
   if (isCallback) {
+    const params = new URLSearchParams(window.location.search);
+    const state = params.get("state");
+    const code = params.get("code");
+    console.log(state, code);
     await auth0.handleRedirectCallback();
     window.history.replaceState({}, document.title, "/");
   }
@@ -58,6 +62,10 @@ async function renderScreen() {
       <button id="counter" type="button"></button>
     </div>
     <button id="protected">Fetch Protected Data</button>
+    <form id="invite-form" onsubmit="return false;" method="POST">
+      <input type="email" name="email" />
+      <button type="submit">Invite User</button>
+    </form>
     <button id="logout">Logout</button>
     </div>
   `;
@@ -69,6 +77,20 @@ async function renderScreen() {
             logoutParams: {
               returnTo: import.meta.env.VITE_MY_LOGOUT_URL,
             },
+          });
+        });
+      document
+        .getElementById("invite-form")
+        ?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target as HTMLFormElement);
+          const email = formData.get("email") as string;
+          await fetch("/api/invite", {
+            method: "POST",
+            headers: {
+              ...(await fetchAuthHeaders()),
+            },
+            body: JSON.stringify({ email }),
           });
         });
 
