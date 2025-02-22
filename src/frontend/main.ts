@@ -11,7 +11,7 @@ const isCallback =
 
 async function renderScreen() {
   if (import.meta.env.DEV) {
-    const { worker } = await import("./mocks/browser");
+    const { worker } = await import("./mocks/browser.ts");
     await worker.start();
   }
 
@@ -22,6 +22,7 @@ async function renderScreen() {
     cacheLocation: "localstorage", // There will be a problem in our legacy application that would remove the in-memory cache. We want this to keep the user's session alive.
     authorizationParams: {
       redirect_uri: import.meta.env.VITE_MY_CALLBACK_URL,
+      connection_id: "wataru-database",
     },
   });
 
@@ -77,13 +78,17 @@ async function renderScreen() {
 
   document.getElementById("protected")?.addEventListener("click", async (e) => {
     e.preventDefault();
-    const response = await fetch("https://example.com/protected", {
+    const response = await fetch("/api/protected", {
       headers: {
         ...(await fetchAuthHeaders()),
       },
     });
-    const data = await response.json();
-    console.log(data);
+    if (!response.ok) {
+      console.error(response);
+    } else {
+      const data = await response.json();
+      console.log(data);
+    }
   });
 
   async function fetchAuthHeaders() {

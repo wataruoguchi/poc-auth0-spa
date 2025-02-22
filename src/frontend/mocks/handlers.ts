@@ -3,6 +3,7 @@ import { getJwks, verify } from "verify-rsa-jwt-cloudflare-worker";
 
 export const handlers = [
   http.get("https://example.com/protected", async ({ request }) => {
+    // TODO: Unused.
     const bearToken = request.headers.get("Authorization")?.split(" ")[1];
     if (bearToken) {
       try {
