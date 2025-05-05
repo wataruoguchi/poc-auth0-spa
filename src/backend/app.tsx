@@ -1,4 +1,4 @@
-import { Context, Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { renderToString } from "react-dom/server";
 import { jwk } from "hono/jwk";
 import { getUser, inviteUser } from "./auth0-management-client";
@@ -47,8 +47,8 @@ app.get("*", (c) => {
           <title>PoC Auth0 SPA with Hono</title>
         </head>
         <body>
-          <div id="app"></div>
-          <script type="module" src="/src/frontend/main.ts"></script>
+          <div id="app" />
+          <script type="module" src="/src/frontend/main.ts" />
         </body>
       </html>,
     ),
