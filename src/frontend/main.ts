@@ -11,7 +11,7 @@ const isCallback =
 
 async function renderScreen() {
   if (import.meta.env.DEV) {
-    const { worker } = await import("./mocks/browser");
+    const { worker } = await import("./mocks/browser.ts");
     await worker.start();
   }
 
@@ -22,10 +22,15 @@ async function renderScreen() {
     cacheLocation: "localstorage", // There will be a problem in our legacy application that would remove the in-memory cache. We want this to keep the user's session alive.
     authorizationParams: {
       redirect_uri: import.meta.env.VITE_MY_CALLBACK_URL,
+      connection_id: import.meta.env.VITE_AUTH0_CONNECTION_ID,
     },
   });
 
   if (isCallback) {
+    const params = new URLSearchParams(window.location.search);
+    const state = params.get("state");
+    const code = params.get("code");
+    console.log(state, code);
     await auth0.handleRedirectCallback();
     window.history.replaceState({}, document.title, "/");
   }
@@ -57,6 +62,10 @@ async function renderScreen() {
       <button id="counter" type="button"></button>
     </div>
     <button id="protected">Fetch Protected Data</button>
+    <form id="invite-form" onsubmit="return false;" method="POST">
+      <input type="email" name="email" />
+      <button type="submit">Invite User</button>
+    </form>
     <button id="logout">Logout</button>
     </div>
   `;
@@ -70,6 +79,20 @@ async function renderScreen() {
             },
           });
         });
+      document
+        .getElementById("invite-form")
+        ?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target as HTMLFormElement);
+          const email = formData.get("email") as string;
+          await fetch("/api/invite", {
+            method: "POST",
+            headers: {
+              ...(await fetchAuthHeaders()),
+            },
+            body: JSON.stringify({ email }),
+          });
+        });
 
       setupCounter(document.querySelector<HTMLButtonElement>("#counter")!);
     }
@@ -77,13 +100,17 @@ async function renderScreen() {
 
   document.getElementById("protected")?.addEventListener("click", async (e) => {
     e.preventDefault();
-    const response = await fetch("https://example.com/protected", {
+    const response = await fetch("/api/protected", {
       headers: {
         ...(await fetchAuthHeaders()),
       },
     });
-    const data = await response.json();
-    console.log(data);
+    if (!response.ok) {
+      console.error(response);
+    } else {
+      const data = await response.json();
+      console.log(data);
+    }
   });
 
   async function fetchAuthHeaders() {
